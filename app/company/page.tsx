@@ -137,7 +137,6 @@ export default function CompanyManagementPage() {
                   <th style={{ padding: '15px 10px', fontSize: '12px', color: '#94a3b8', textAlign: 'right' }}>ACTION</th>
                 </tr>
               </thead>
-// 修正箇所の抜粋
 <tbody>
   {companies.map((company) => (
     <tr key={company.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
