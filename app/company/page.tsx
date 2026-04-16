@@ -1,21 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../utils/supabase/supabase';
+// パスが解決できない場合は、実際のファイル位置に合わせて '../../utils/supabase/supabase' などに調整してください
+import { supabase } from '@/utils/supabase/supabase';
 
-/**
- * 企業データのインターフェース定義
- */
 interface Company {
   id: string;
   name: string;
   created_at?: string;
 }
 
-/**
- * 企業管理ページコンポーネント
- * 一覧表示(Read)、新規登録(Create)、削除(Delete)機能を統合
- */
 export default function CompanyManagementPage() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [newName, setNewName] = useState('');
@@ -23,10 +17,10 @@ export default function CompanyManagementPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // --- 1. データの取得 (READ) ---
   const fetchCompanies = async () => {
     try {
       setLoading(true);
+      setError(null);
       const { data, error: fetchError } = await supabase
         .from('company')
         .select('*')
@@ -35,8 +29,8 @@ export default function CompanyManagementPage() {
       if (fetchError) throw fetchError;
       setCompanies(data || []);
     } catch (err: any) {
-      console.error('Error:', err);
-      setError('データの読み込みに失敗しました。');
+      console.error('Fetch error:', err);
+      setError('データの読み込みに失敗しました。パス設定やテーブル名を確認してください。');
     } finally {
       setLoading(false);
     }
@@ -46,14 +40,11 @@ export default function CompanyManagementPage() {
     fetchCompanies();
   }, []);
 
-  // --- 2. 新規登録処理 (CREATE) ---
   const handleAddCompany = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName.trim()) return;
 
     setIsSubmitting(true);
-    setError(null);
-
     try {
       const { error: insertError } = await supabase
         .from('company')
@@ -62,7 +53,7 @@ export default function CompanyManagementPage() {
       if (insertError) throw insertError;
 
       setNewName('');
-      await fetchCompanies(); // リストを最新にする
+      await fetchCompanies();
     } catch (err: any) {
       setError('登録に失敗しました。');
     } finally {
@@ -70,7 +61,6 @@ export default function CompanyManagementPage() {
     }
   };
 
-  // --- 3. 削除処理 (DELETE) ---
   const handleDeleteCompany = async (id: string, name: string) => {
     if (!confirm(`「${name}」を削除してもよろしいですか？`)) return;
 
@@ -88,7 +78,7 @@ export default function CompanyManagementPage() {
   };
 
   return (
-    <div style={{ minHeight: '100-vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', padding: '40px 20px', fontFamily: 'sans-serif' }}>
       <div style={{ maxWidth: '800px', margin: '0 auto' }}>
         
         <nav style={{ marginBottom: '30px' }}>
@@ -97,12 +87,17 @@ export default function CompanyManagementPage() {
 
         <header style={{ marginBottom: '40px' }}>
           <h1 style={{ fontSize: '32px', fontWeight: '900', color: '#1e293b' }}>企業管理データベース</h1>
-          <p style={{ color: '#64748b' }}>企業データの「登録」「表示」「削除」が行えます。</p>
+          <p style={{ color: '#64748b' }}>CRUD機能（作成・読み取り・削除）</p>
         </header>
 
-        {/* 登録フォーム */}
+        {error && (
+          <div style={{ backgroundColor: '#fff1f2', border: '1px solid #fda4af', color: '#be123c', padding: '15px', borderRadius: '12px', marginBottom: '20px', fontSize: '14px', fontWeight: 'bold' }}>
+            ⚠️ {error}
+          </div>
+        )}
+
         <section style={{ backgroundColor: '#fff', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px' }}>新規企業を登録</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px' }}>新規登録</h2>
           <form onSubmit={handleAddCompany} style={{ display: 'flex', gap: '15px' }}>
             <input
               type="text"
@@ -125,23 +120,21 @@ export default function CompanyManagementPage() {
                 cursor: 'pointer'
               }}
             >
-              {isSubmitting ? '登録中...' : '登録'}
+              {isSubmitting ? '処理中...' : '登録'}
             </button>
           </form>
-          {error && <p style={{ color: '#e11d48', marginTop: '10px', fontSize: '14px' }}>{error}</p>}
         </section>
 
-        {/* 企業一覧 */}
         <section style={{ backgroundColor: '#fff', borderRadius: '24px', padding: '30px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px' }}>登録済み企業一覧</h2>
+          <h2 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px' }}>企業一覧</h2>
           {loading ? (
             <p style={{ textAlign: 'center', color: '#94a3b8' }}>読み込み中...</p>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead>
                 <tr style={{ borderBottom: '2px solid #f1f5f9', textAlign: 'left' }}>
-                  <th style={{ padding: '15px 10px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase' }}>企業名</th>
-                  <th style={{ padding: '15px 10px', fontSize: '12px', color: '#94a3b8', textTransform: 'uppercase', textAlign: 'right' }}>操作</th>
+                  <th style={{ padding: '15px 10px', fontSize: '12px', color: '#94a3b8' }}>NAME</th>
+                  <th style={{ padding: '15px 10px', fontSize: '12px', color: '#94a3b8', textAlign: 'right' }}>ACTION</th>
                 </tr>
               </thead>
               <tbody>
@@ -158,11 +151,6 @@ export default function CompanyManagementPage() {
                     </td>
                   </tr>
                 ))}
-                {companies.length === 0 && (
-                  <tr>
-                    <td colSpan={2} style={{ padding: '40px', textAlign: 'center', color: '#cbd5e1' }}>データがありません</td>
-                  </tr>
-                )}
               </tbody>
             </table>
           )}
