@@ -1,4 +1,7 @@
 import React from 'react';
+// エラー解消のため、エイリアス（@/）ではなく相対パス（../../）でインポートを試みます
+// プロジェクト構造に合わせて utils/supabase.ts を参照します
+import { supabase } from '../../utils/supabase';
 
 /**
  * SFAのメインダッシュボード画面
