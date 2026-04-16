@@ -2,26 +2,34 @@ import { createClient } from '@supabase/supabase-js';
 
 /**
  * Supabaseクライアントの初期化
- * * Vercelでのデプロイエラーを回避するため、環境変数の存在チェックを強化しています。
- * NEXT_PUBLIC_ から始まる環境変数は、ブラウザとサーバーの両方で参照可能です。
+ * * Vercelでのデプロイエラー（ビルド失敗）を回避するための堅牢な設定です。
+ * 環境変数が未設定の状態でもビルドを通過させ、実行時に適切な警告を出します。
  */
 
-// 環境変数の取得（undefinedの可能性を考慮）
+// 1. 環境変数の取得
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-// Vercelのビルド時や実行時に環境変数が欠落している場合のエラーハンドリング
-if (!supabaseUrl || !supabaseAnonKey) {
-  // ビルドを止めないために、開発環境以外では警告を表示し、実行時にエラーを投げます
-  if (process.env.NODE_ENV === 'production') {
-    console.warn('警告: Supabaseの環境変数が設定されていません。Vercelのプロジェクト設定を確認してください。');
-  }
+// 2. プレースホルダーの準備
+// ビルド時にURLが空だとエラーになるケースを防ぐため、形式の正しいダミーURLを使用します。
+const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);
+const finalUrl = supabaseUrl || 'https://your-project-id.supabase.co';
+const finalKey = supabaseAnonKey || 'your-anon-key';
+
+// 3. 実行時の警告（サーバーサイドのログで確認可能）
+if (!isConfigured && process.env.NODE_ENV === 'production') {
+  console.warn(
+    '【重要】Supabaseの環境変数が設定されていません。' +
+    'Vercelの [Project Settings] > [Environment Variables] に以下の2つを追加してください：' +
+    'NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY'
+  );
 }
 
-// クライアントの生成
-// 必須変数が存在する場合のみ初期化し、存在しない場合はダミーまたはnullを許容する構成にすることで、
-// ビルドフェーズでの「!（非NULL修飾子）」による強制的なクラッシュを防ぎます。
-export const supabase = createClient(
-  supabaseUrl || 'https://placeholder-url.supabase.co',
-  supabaseAnonKey || 'placeholder-key'
-);
+// 4. クライアントの生成
+// 必須変数が欠けていても、一旦このインスタンス生成でコードを止めないようにします。
+export const supabase = createClient(finalUrl, finalKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
