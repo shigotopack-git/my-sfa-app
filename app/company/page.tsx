@@ -137,21 +137,37 @@ export default function CompanyManagementPage() {
                   <th style={{ padding: '15px 10px', fontSize: '12px', color: '#94a3b8', textAlign: 'right' }}>ACTION</th>
                 </tr>
               </thead>
-              <tbody>
-                {companies.map((company) => (
-                  <tr key={company.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                    <td style={{ padding: '20px 10px', fontWeight: 'bold', color: '#334155' }}>{company.name}</td>
-                    <td style={{ padding: '20px 10px', textAlign: 'right' }}>
-                      <button
-                        onClick={() => handleDeleteCompany(company.id, company.name)}
-                        style={{ backgroundColor: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '18px' }}
-                      >
-                        🗑️
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
+// 修正箇所の抜粋
+<tbody>
+  {companies.map((company) => (
+    <tr key={company.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
+      <td style={{ padding: '20px 10px' }}>
+        {/* 名前をクリックすると詳細ページへ飛ぶようにリンク化 */}
+        <a 
+          href={`/company/${company.id}`} 
+          style={{ 
+            fontWeight: 'bold', 
+            color: '#1e293b', 
+            textDecoration: 'none',
+            fontSize: '18px'
+          }}
+          onMouseOver={(e) => (e.currentTarget.style.color = '#4f46e5')}
+          onMouseOut={(e) => (e.currentTarget.style.color = '#1e293b')}
+        >
+          {company.name}
+        </a>
+      </td>
+      <td style={{ padding: '20px 10px', textAlign: 'right' }}>
+        <button
+          onClick={() => handleDeleteCompany(company.id, company.name)}
+          style={{ backgroundColor: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '18px' }}
+        >
+          🗑️
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
             </table>
           )}
         </section>
