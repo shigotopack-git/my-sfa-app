@@ -24,7 +24,7 @@ export default async function CompanyListPage() {
   try {
     // Supabaseからデータを取得
     const { data, error } = await supabase
-      .from('companies')
+      .from('company')
       .select('*')
       .order('created_at', { ascending: false });
     
